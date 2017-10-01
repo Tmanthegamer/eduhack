@@ -13,11 +13,11 @@ const Alexa = require('alexa-sdk');
 const mysql = require('mysql');
 
 const connection = mysql.createConnection({
-        host     : 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
-        database : 'testdb',
-        user     : 'tomato',
-        password : 'whoareyoutomato',
-      
+    host: 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
+    database: 'testdb',
+    user: 'tomato',
+    password: 'whoareyoutomato',
+
 });
 
 //=========================================================================================================================================
@@ -67,16 +67,59 @@ exports.handler = function(event, context, callback) {
 
 
 const handlers = {
-    'LaunchRequest': function () {
-        this.emit('SubjectIntent');
+    'LaunchRequest': function() {
+        this.emit('IntroIntent');
+        // what would you like to do?
+        //    make course?  this.emit('SubjectIntent');
+        //     shut up? this.emit shut up 
+        //     get Random Fact from topics? this.emit randomFact
+
     },
-    'SubjectIntent': function () {
+    'IntroIntent': function() {
+        var WELCOME_MESSAGE =
+            "Welcome Gabe, what would you like to do today?\
+            you can say \
+            Random Topic, and \
+            Learn a Subject, and \
+            Track my progress";
+        this.emit(':ask', WELCOME_MESSAGE);
+    },
+    'HandlerIntent': function() {
+        var intentObj = this.event.request.intent;
+        var cmd = intentObj.slots.Course.value;
+
+        /*if( cmd === 'Random Topic') {
+            //this.emit('RandomIntent');
+
+        } else*/
+        if (cmd === 'Learn a Subject') {
+            this.emit('SubjectIntent');
+
+        }
+        /*else if( cmd === 'Track my progress') {
+                   this.emit('ProgressIntent');
+
+               } */
+        else if (cmd === 'Shut up') {
+            this.emit('ShutupIntent');
+
+        } else {
+            this.emit(':tell', 'I could not recognize that command, good bye forever.');
+        }
+    },
+    'RandomIntent': function() {
+
+    },
+    'ProgressIntent': function() {
+
+    },
+    'SubjectIntent': function() {
         const connection = mysql.createConnection({
-                host     : 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
-                database : 'testdb',
-                user     : 'tomato',
-                password : 'whoareyoutomato',
-              
+            host: 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
+            database: 'testdb',
+            user: 'tomato',
+            password: 'whoareyoutomato',
+
         });
 
 
@@ -87,7 +130,7 @@ const handlers = {
             console.log('Inside connection.connect() callback');
             if (!err) {
                 console.log("Database is connected ... ");
-                queryStr = "SELECT * FROM Subject";
+                var queryStr = "SELECT * FROM Subject";
 
                 connection.query(queryStr,
                     function(err, result) {
@@ -96,9 +139,9 @@ const handlers = {
                             console.log("Query Successful! Ending Connection.");
                             console.log('result', result);
                             var subjectReply = 'Would you like to learn about ';
-                            for ( var i = 0; i < result.length; i++ ) {
+                            for (var i = 0; i < result.length; i++) {
                                 subjectReply += result[i].SubjectName;
-                                if ((i+1) < result.length) {
+                                if ((i + 1) < result.length) {
                                     subjectReply += ' or '
                                 }
                             }
@@ -115,15 +158,15 @@ const handlers = {
                 console.log("Error connecting database ..." + err.message);
             }
         });
- 
+
     },
-    'CourseIntent': function () {
+    'CourseIntent': function() {
         const connection = mysql.createConnection({
-                host     : 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
-                database : 'testdb',
-                user     : 'tomato',
-                password : 'whoareyoutomato',
-              
+            host: 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
+            database: 'testdb',
+            user: 'tomato',
+            password: 'whoareyoutomato',
+
         });
 
         console.log('Then run MySQL code:');
@@ -136,12 +179,12 @@ const handlers = {
             console.log('Inside connection.connect() callback');
             if (!err) {
                 console.log("Database is connected ... ");
-                queryStr = "SELECT * \
+                var queryStr = "SELECT * \
                     FROM Course\
                     INNER JOIN Subject\
                     ON Subject.PK_ID = Course.FK_SubjectID\
                     WHERE Subject.SubjectName LIKE \'%" + intentObj.slots.Subject.value + "%\'";
-                
+
                 connection.query(queryStr,
                     function(err, result) {
                         console.log("Inside connection.query() callback")
@@ -150,9 +193,9 @@ const handlers = {
                             console.log('result', result);
 
                             var subjectReply = 'Would you like to learn about ';
-                            for ( var i = 0; i < result.length; i++ ) {
+                            for (var i = 0; i < result.length; i++) {
                                 subjectReply += result[i].CourseName;
-                                if ((i+1) < result.length) {
+                                if ((i + 1) < result.length) {
                                     subjectReply += ', or'
                                 }
                             }
@@ -169,13 +212,13 @@ const handlers = {
             }
         });
     },
-    'TopicIntent': function () {
+    'TopicIntent': function() {
         const connection = mysql.createConnection({
-                host     : 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
-                database : 'testdb',
-                user     : 'tomato',
-                password : 'whoareyoutomato',
-              
+            host: 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
+            database: 'testdb',
+            user: 'tomato',
+            password: 'whoareyoutomato',
+
         });
 
         console.log('Then run MySQL code:');
@@ -188,7 +231,7 @@ const handlers = {
             console.log('Inside connection.connect() callback');
             if (!err) {
                 console.log("Database is connected ... ");
-                queryStr = "SELECT * \
+                var queryStr = "SELECT * \
                     FROM Topic\
                     INNER JOIN Course\
                     ON Topic.FK_CourseID = Course.PK_ID\
@@ -218,20 +261,63 @@ const handlers = {
         });
     },
     'ShutupIntent': function() {
-        this.emit(':tell', 'Ough, it hurts my feelings. * CRY *. SHUTING DOOOOOOoooowwwwnnn');
+        this.emit(':tell', 'Ow, it hurts my feelings. * CRY *. SHUTING Dow ow ow');
     },
-    'AMAZON.HelpIntent': function () {
+    'RandoIntent': function() {
+        const connection = mysql.createConnection({
+            host: 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
+            database: 'testdb',
+            user: 'tomato',
+            password: 'whoareyoutomato',
+
+        });
+
+        console.log('Then run MySQL code:');
+        var that = this;
+
+        var subjectReply = "";
+
+        connection.connect(function(err) {
+            console.log('Inside connection.connect() callback');
+            if (!err) {
+                console.log("Database is connected ... ");
+                var queryStr = "SELECT * FROM Topic";
+
+                connection.query(queryStr,
+                    function(err, result) {
+                        console.log("Inside connection.query() callback")
+                        if (!err) {
+                            console.log("Query Successful! Ending Connection.");
+                            console.log('result', result);
+
+                            var i = Math.floor(Math.random() * result.length);
+                            subjectReply += result[i].TopicTitle;
+                            subjectReply += '. '
+                            subjectReply += result[i].TopicAnswer;
+                            subjectReply += '. '
+                            that.emit(':tell', subjectReply);
+
+                        } else {
+                            console.log("Query error!");
+                        }
+                    });
+            } else {
+                console.log("Error connecting database ..." + err.message);
+            }
+        });
+    },
+    'AMAZON.HelpIntent': function() {
         const speechOutput = HELP_MESSAGE;
         const reprompt = HELP_REPROMPT;
 
         this.response.speak(speechOutput).listen(reprompt);
         this.emit(':responseReady');
     },
-    'AMAZON.CancelIntent': function () {
+    'AMAZON.CancelIntent': function() {
         this.response.speak(STOP_MESSAGE);
         this.emit(':responseReady');
     },
-    'AMAZON.StopIntent': function () {
+    'AMAZON.StopIntent': function() {
         this.response.speak(STOP_MESSAGE);
         this.emit(':responseReady');
     },
