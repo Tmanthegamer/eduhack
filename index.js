@@ -69,24 +69,19 @@ exports.handler = function(event, context, callback) {
 const handlers = {
     'LaunchRequest': function() {
         this.emit('IntroIntent');
-        // what would you like to do?
-        //    make course?  this.emit('SubjectIntent');
-        //     shut up? this.emit shut up 
-        //     get Random Fact from topics? this.emit randomFact
-
     },
     'IntroIntent': function() {
         var WELCOME_MESSAGE =
-            "Welcome Gabe, what would you like to do today?\
-            you can say \
-            Random Topic, and \
-            Learn a Subject, and \
-            Track my progress";
+            "Welcome Gabe, what would you like to do today?";
+            // you can say \
+            // Random Topic, and \
+            // Learn a Subject, and \
+            // Track my progress";
         this.emit(':ask', WELCOME_MESSAGE);
     },
     'HandlerIntent': function() {
         var intentObj = this.event.request.intent;
-        var cmd = intentObj.slots.Course.value;
+        var cmd = intentObj.slots.Command.value;
 
         /*if( cmd === 'Random Topic') {
             //this.emit('RandomIntent');
@@ -95,12 +90,10 @@ const handlers = {
         if (cmd === 'Learn a Subject') {
             this.emit('SubjectIntent');
 
-        }
-        /*else if( cmd === 'Track my progress') {
-                   this.emit('ProgressIntent');
+        } else if (cmd === 'Track my progress') {
+            this.emit('ProgressIntent');
 
-               } */
-        else if (cmd === 'Shut up') {
+        } else if (cmd === 'Shut up') {
             this.emit('ShutupIntent');
 
         } else {
@@ -111,7 +104,52 @@ const handlers = {
 
     },
     'ProgressIntent': function() {
+        const connection = mysql.createConnection({
+            host: 'mytestdb.ckdb5z1mnqzu.us-east-1.rds.amazonaws.com',
+            database: 'testdb',
+            user: 'tomato',
+            password: 'whoareyoutomato',
 
+        });
+
+
+        console.log('Then run MySQL code:');
+        var that = this;
+
+        connection.connect(function(err) {
+            console.log('Inside connection.connect() callback');
+            if (!err) {
+                console.log("Database is connected ... ");
+                var queryStr = "SELECT * FROM Subject_tracker\
+                JOIN Subject\
+                ON Subject_tracker.FK_SubjectID = Subject.PK_ID";
+
+                connection.query(queryStr,
+                    function(err, result) {
+                        console.log("Inside connection.query() callback")
+                        if (!err) {
+                            console.log("Query Successful! Ending Connection.");
+                            console.log('result', result);
+                            var subjectReply = 'Your progress status:';
+
+                            for (var i = 0; i < result.length; i++) {
+                                subjectReply += 'Subject ' + result[i].SubjectName + '. ';
+                                subjectReply += 'Time spending ' + result[i].TimeSpent + ' minutes. ';
+                                subjectReply += 'Estimated time remaining ' + result[i].TimeRemaining + ' minutes. ';
+                                subjectReply += 'View count ' + result[i].ViewCount + ' times. ';
+                                subjectReply += 'Duration ' + result[i].Duration + ' minutes. ';
+                            }
+
+                            that.emit(':tell', subjectReply);
+
+                        } else {
+                            console.log("Query error!");
+                        }
+                    });
+            } else {
+                console.log("Error connecting database ..." + err.message);
+            }
+        });
     },
     'SubjectIntent': function() {
         const connection = mysql.createConnection({
@@ -292,9 +330,9 @@ const handlers = {
 
                             var i = Math.floor(Math.random() * result.length);
                             subjectReply += result[i].TopicTitle;
-                            subjectReply += '. '
+                            subjectReply += '. ';
                             subjectReply += result[i].TopicAnswer;
-                            subjectReply += '. '
+                            subjectReply += '. ';
                             that.emit(':tell', subjectReply);
 
                         } else {
