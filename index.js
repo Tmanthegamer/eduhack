@@ -218,7 +218,7 @@ const handlers = {
         });
     },
     'ShutupIntent': function() {
-        that.emit(':tell', 'Ough, it hurts my feelings. * CRY *. SHUTING DOOOOOOoooowwwwnnn');
+        this.emit(':tell', 'Ough, it hurts my feelings. * CRY *. SHUTING DOOOOOOoooowwwwnnn');
     },
     'AMAZON.HelpIntent': function () {
         const speechOutput = HELP_MESSAGE;
